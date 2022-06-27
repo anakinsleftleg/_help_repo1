@@ -1,0 +1,56 @@
+{{/* Initialize and Declare Variables */}}
+{{ $small := dict -}}
+{{- $medium := dict -}}
+{{- $large := dict -}}
+{{- $xlarge := dict -}}
+{{- $imageFallback := dict -}}
+
+{{- /* Retrieve Image Resource */ -}}
+{{- $image := (partial "functions/get-image.html" (dict "Page" .Page "Destination" .Destination "Title" .Title "PlainText" .PlainText)) -}}
+
+{{- /*  TODO: Use <picture> tag   */ -}}
+{{- /* Create resized images up until the image width is smaller than the next image size level */ -}}
+{{- with $image -}}
+  {{- if ne .MediaType.SubType "gif" -}}
+    {{- if gt .Width 480 -}}
+      {{- $small = .Resize "480x webp q50" -}}
+      {{- if gt .Width 768 -}}
+        {{- $medium = .Resize "768x webp q50" -}}
+        {{- if gt .Width 1024 -}}
+          {{- $large = $image.Resize "1024x webp q50" -}}
+          {{- if gt .Width 1920 -}}
+            {{- $xlarge = $image.Resize "1920x webp q50" -}}
+          {{- else -}}
+            {{- $xlarge = .Resize (add (string .Width) "x webp q50") -}}
+          {{- end -}}
+        {{- else -}}
+          {{- $large = .Resize (add (string .Width) "x webp q50") -}}
+        {{- end -}}
+      {{- else -}}
+        {{- $medium = .Resize (add (string .Width) "x webp q50") -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $small = .Resize (add (string .Width) "x webp q50") -}}
+    {{- end -}}
+    {{- $imageFallback = .Resize (add (string (math.Min .Width 1024)) "x q75") -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Image HTML */ -}}
+<img class="rounded" loading="lazy" sizes="100vw"
+  {{- if ne $image.MediaType.SubType "gif" -}}
+    srcset="
+    {{- with $small }}{{ .RelPermalink }} 480w{{ end -}}
+    {{- with $medium }}, {{ .RelPermalink }} 768w{{ end -}}
+    {{- with $large }}, {{ .RelPermalink }} 1024w{{ end -}}
+    {{- with $xlarge }}, {{ .RelPermalink }} 1920w{{ end }}"
+  {{- end -}}
+  src="{{ $imageFallback.RelPermalink }}"{{- /*    */ -}}
+  width="{{ $image.Width }}"{{- /*    */ -}}
+  height="{{ $image.Height }}"
+  {{- with .PlainText -}}
+    alt="{{ . | safeHTML }}"
+  {{- end -}}
+  {{- with .Title -}}
+    title="{{ . }}"
+  {{- end -}} />

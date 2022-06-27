@@ -1,0 +1,18 @@
+{{ $.Scratch.Add "index" slice }}
+{{ range site.RegularPages }}
+
+{{ $date:= time.Format ":date_long" .PublishDate }}
+
+{{ $image := "" }}
+{{ $imagePath:= "" }}
+{{ with .Params.images }}
+    {{ $imagePath = index . 0 }}
+    {{ with (partial "functions/get-image.html" (dict "Page" $.Page "Destination" $imagePath)) }}
+        {{ $image = .Resize "650x" }}
+        {{ $image = $image.Permalink }}
+    {{ end }}
+{{ end }}
+
+{{ $.Scratch.Add "index" (dict "title" .Title "date" $date "image" $image "categories" .Params.categories "contents" .Plain "permalink" .RelPermalink) }}
+{{ end }}
+{{ $.Scratch.Get "index" | jsonify }}

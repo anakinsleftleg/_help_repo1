@@ -1,0 +1,113 @@
+<!-- get image path -->
+{{ $imagePath := .Get "src" }}
+
+<!-- image position -->
+{{ $positionClass := "" }}
+{{ with (index (intersect (slice "center" "left" "right" "float-left" "float-right") (slice (lower (.Get "position")))) 0) }}
+  {{ $positionClass = add "img-" . }}
+{{ end }}
+
+<!-- check cdn image -->
+{{ if or (hasPrefix $imagePath "http") (hasPrefix $imagePath "/") }}
+  <!-- cdn image -->
+  <!-- image figure -->
+  {{ if .Get `title` }}
+    <figure class="{{.Scratch.Get `image-position`}}">
+      <img loading="lazy" decoding="async" src="{{ $imagePath | safeURL }}" alt="{{ .Get `alt` }}" class="{{.Get `c`}}" width="{{.Get `w`}}" height="{{.Get `h`}}">
+      <figcaption>{{.Get `title` | markdownify}}</figcaption>
+    </figure>
+  {{ else }}
+    <!-- image tag -->
+    <img loading="lazy" decoding="async" src="{{ $imagePath | safeURL }}" alt="{{ .Get `alt` }}" class="{{.Get `c`}} {{.Scratch.Get `image-position`}}" width="{{.Get `w`}}" height="{{.Get `h`}}">
+  {{ end }}
+<!-- /image cdn -->
+
+{{ else }}
+  <!-- check image existence -->
+  {{ $image := "" }}
+  {{ if fileExists (add .Page.RelPermalink $imagePath) }}
+    {{ $image = .Page.Resources.GetMatch $imagePath }}
+  {{ else if fileExists (add `assets/` $imagePath) }}
+    {{ $image = resources.Get $imagePath }}
+  <!-- image from assets folder -->
+  {{ else }}
+    <strong class="text-danger mb-3 d-inline-block">{{.Page.Permalink}}{{$imagePath}} does not exist</strong>
+  {{ end }}
+
+  <!-- begin processing -->
+  {{ $imagePostProcess := "" }}
+  {{ $imageFallback := $image }}
+  {{ if $image }}
+    <!-- gif image -->
+    {{ if eq $image.MediaType.SubType "gif" }}
+    <!-- image processing -->
+    {{ else }}
+      {{ if (isset .Params "format") }}
+        {{ $options := add (add (string (.Get "w" | default $image.Width)) "x ") (.Get "format") }}
+        {{ $imagePostProcess = $image.Resize $options }}
+      {{ end }}
+      <!-- fallback image -->
+      {{ $option := add (string (.Get "w" | default $image.Width)) "x" }}
+      {{ $imageFallback = $image.Resize $option }}
+    {{ end }}
+
+    <!-- image figure -->
+    <figure {{ with $positionClass }}class="{{ . }}"{{ end }} style="">
+      <picture>
+        {{ if $imagePostProcess }}
+        <source 
+          srcset="{{ $imagePostProcess.RelPermalink }}" 
+          type="{{ $imagePostProcess.MediaType }}">
+        {{ end }}
+        <img 
+        loading="lazy" 
+        decoding="async" 
+        {{ with (.Get "corners") }}class="{{ . }}"{{ end }}
+        width="{{ $imageFallback.Width }}" 
+        height="{{ $imageFallback.Height }}" 
+        src="{{ $imageFallback.RelPermalink }}" 
+        alt="{{.Get `alt`}}">
+      </picture>
+        {{ if or (or (.Get "title") (.Get "caption")) (.Get "attribution") }}
+        <figcaption style="">
+          <table style=
+          "display: table;
+           width: 100%;"><tr style="display: flex; padding: 0 0.25rem 0 0.25rem">
+          <td style=
+          "padding: 0; 
+           border: none; 
+           vertical-align: top; 
+           font-weight: bold; 
+           font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; 
+           font-size:inherit; 
+           text-align: left;
+           width: 100%;">
+          {{ with .Get "title" }}{{ . }}{{ end }}
+          {{ if or (.Get "caption") (.Get "attribution") }}
+            <p style=
+            "font-style: italic;
+             font-size: smaller;
+             margin-top: -0.25rem;">
+            {{ with .Get "caption" }}{{ . }}{{ end }}</p>
+            </td><td style=
+            "padding: 0;
+             border: none;
+             vertical-align: top; 
+             text-align: right; 
+             white-space: nowrap;">
+             <p style=
+             "font-style: italic; 
+              font-size: smaller; 
+              margin-top: -0.25rem;">
+            {{ with .Get "attrlink" }}<a href="{{ . }}">{{ end }}
+            {{ with .Get "attribution" }}{{ . }}{{ end }}
+            {{ with .Get "attrlink" }}</a>{{ end }}
+            </p></td>
+          {{ end }}
+          </tr></table>
+        </figcaption>
+        {{ end }}
+    </figure>
+  {{ end }}
+{{ end }}
+<!-- /check cdn image -->
