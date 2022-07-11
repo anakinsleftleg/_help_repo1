@@ -7,41 +7,16 @@
   {{ $positionClass = add "img-" . }}
 {{ end }}
 
-<!-- check cdn image -->
-{{ if or (hasPrefix $imagePath "http") (hasPrefix $imagePath "/") }}
-  <!-- cdn image -->
-  <!-- image figure -->
-  {{ if .Get `title` }}
-    <figure class="{{.Scratch.Get `image-position`}}">
-      <img loading="lazy" decoding="async" src="{{ $imagePath | safeURL }}" alt="{{ .Get `alt` }}" class="{{.Get `c`}}" width="{{.Get `w`}}" height="{{.Get `h`}}">
-      <figcaption>{{.Get `title` | markdownify}}</figcaption>
-    </figure>
-  {{ else }}
-    <!-- image tag -->
-    <img loading="lazy" decoding="async" src="{{ $imagePath | safeURL }}" alt="{{ .Get `alt` }}" class="{{.Get `c`}} {{.Scratch.Get `image-position`}}" width="{{.Get `w`}}" height="{{.Get `h`}}">
-  {{ end }}
-<!-- /image cdn -->
-
-{{ else }}
-  <!-- check image existence -->
-  {{ $image := "" }}
-  {{ if fileExists (add .Page.RelPermalink $imagePath) }}
-    {{ $image = .Page.Resources.GetMatch $imagePath }}
-  {{ else if fileExists (add `assets/` $imagePath) }}
-    {{ $image = resources.Get $imagePath }}
-  <!-- image from assets folder -->
-  {{ else }}
-    <strong class="text-danger mb-3 d-inline-block">{{.Page.Permalink}}{{$imagePath}} does not exist</strong>
-  {{ end }}
+{{- /* Retrieve Image Resource */ -}}
+{{- $image := (partial "functions/get-image.html" (dict "Page" .Page "Destination" (.Get "src"))) -}}
 
   <!-- begin processing -->
   {{ $imagePostProcess := "" }}
   {{ $imageFallback := $image }}
   {{ if $image }}
     <!-- gif image -->
-    {{ if eq $image.MediaType.SubType "gif" }}
+    {{ if ne $image.MediaType.SubType "gif" }}
     <!-- image processing -->
-    {{ else }}
       {{ if (isset .Params "format") }}
         {{ $options := add (add (string (.Get "w" | default $image.Width)) "x ") (.Get "format") }}
         {{ $imagePostProcess = $image.Resize $options }}
@@ -87,5 +62,3 @@
         {{ end }}
     </figure>
   {{ end }}
-{{ end }}
-<!-- /check cdn image -->

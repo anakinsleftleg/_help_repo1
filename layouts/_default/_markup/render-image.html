@@ -9,6 +9,7 @@
 {{- $image := (partial "functions/get-image.html" (dict "Page" .Page "Destination" .Destination "Title" .Title "PlainText" .PlainText)) -}}
 
 {{- /*  TODO: Use <picture> tag   */ -}}
+  {{/* TODO: Make the breakpoints into a slice maybe, and maybe loop the processing in another partial */}}
 {{- /* Create resized images up until the image width is smaller than the next image size level */ -}}
 {{- with $image -}}
   {{- if ne .MediaType.SubType "gif" -}}

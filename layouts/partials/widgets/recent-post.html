@@ -3,63 +3,33 @@
     <h3 class="title-border h5">Featured Posts</h3>
   </div>
   <div class="d-grid mb-5 gap-3 d-md-block nav nav-pills">
-    <button class="btn btn-sm btn-outline-primary btn-lg me-2 mb-lg-3 mb-xl-0 active" type="button" data-bs-toggle="pill" data-bs-target="#Featured" aria-selected="true">Featured</button>
-    <button class="btn btn-sm btn-outline-primary btn-lg" type="button" data-bs-toggle="pill" data-bs-target="#Recent" aria-selected="false">Recent</button>
+    <button class="btn btn-sm btn-outline-primary btn-lg me-2 mb-lg-3 mb-xl-0 active" type="button" data-bs-toggle="pill" data-bs-target="#Featured" aria-selected="true">
+      Featured
+    </button>
+    <button class="btn btn-sm btn-outline-primary btn-lg" type="button" data-bs-toggle="pill" data-bs-target="#Recent" aria-selected="false">
+      Recent
+    </button>
   </div>
 
   <div class="tab-content">
     <div class="blog-card-list text-start tab-pane fade show active" id="Featured">
-      {{ range first 5 ( where site.RegularPages "Params.featured_post" true )}}
+      {{ range first 5 ( where site.RegularPages "Params.featured_post" true ) }}
       <div class="card rounded-0">
         <div class="d-sm-flex">
           <!-- image path -->
           {{ $imagePath:= "" }}
           {{ with .Params.images }}
-            {{ $imagePath = index . 0 }}
+          {{ $imagePath = index . 0 }}
           {{ end }}
           {{ if $imagePath }}
-          <!-- image CDN -->
-          {{ if hasPrefix $imagePath "http" }}
-          <img loading="lazy" decoding="async" src="{{ $imagePath | safeURL }}" alt="{{ .Title }}"
-            class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="80" height="80">
-          {{ else }}
-          <!-- /image cdn -->
-
-          <!-- image processing for single device -->
-          {{ if hasPrefix $imagePath "/" }}
-            {{ $image := .Resources.GetMatch (path.Split $imagePath).File }}
-            {{ if $image }}
-              {{ $imageFallback:= $image.Fill "80x80" }}
-              {{ $imageWebp:= $image.Fill "80x80 webp" }}
-              <img loading="lazy" decoding="async" src="{{$imageWebp.RelPermalink}}" alt="{{ .Title }}"
-                class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{$imageFallback.Width}}" height="{{$imageFallback.Height}}"
-                onerror="this.onerror='null';this.src='{{$imageFallback.RelPermalink}}'">
-            {{ else }}
-              {{ if fileExists (add `assets/` $imagePath) }}
-                {{ $image:= resources.Get $imagePath }}
-                {{ $imageFallback:= $image.Fill "80x80" }}
-                {{ $imageWebp:= $image.Fill "80x80 webp" }}
-                <img loading="lazy" decoding="async" src="{{$imageWebp.RelPermalink}}" alt="{{ .Title }}"
-                  class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{$imageFallback.Width}}" height="{{$imageFallback.Height}}"
-                  onerror="this.onerror='null';this.src='{{$imageFallback.RelPermalink}}'">
-              {{ end }}
-            {{ end }}
-          {{ else }}
-            {{ if fileExists (add `assets/` $imagePath) }}
-              {{ $image:= resources.Get $imagePath }}
-              {{ $imageFallback:= $image.Fill "80x80" }}
-              {{ $imageWebp:= $image.Fill "80x80 webp" }}
-              <img loading="lazy" decoding="async" src="{{$imageWebp.RelPermalink}}" alt="{{ .Title }}"
-                class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{$imageFallback.Width}}" height="{{$imageFallback.Height}}"
-                onerror="this.onerror='null';this.src='{{$imageFallback.RelPermalink}}'">
-            {{ end }}
-          {{ end }}
-          <!-- /image processing for single device -->
-          {{ end }}
+          {{ $image := (partial "functions/get-image.html" (dict "Page" . "Destination" $imagePath)) }}
+          {{ $imageFallback:= $image.Fill "80x80" }}
+          {{ $imageWebp:= $image.Fill "80x80 webp" }}
+          <img loading="lazy" decoding="async" src="{{ $imageWebp.RelPermalink }}" alt="{{ .Title }}" class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{ $imageFallback.Width }}" height="{{ $imageFallback.Height }}" onerror="this.onerror='null';this.src='{{ $imageFallback.RelPermalink }}'" />
           {{ end }}
           <div class="card-body ps-sm-3">
             <h4 class="h6">
-              <a class="title-linked" href="{{.RelPermalink}}">{{.Title | markdownify}}</a>
+              <a class="title-linked" href="{{ .RelPermalink }}">{{ .Title | markdownify }}</a>
             </h4>
             <ul class="list-inline card-meta d-flex align-items-center mb-3">
               <li class="list-inline-item d-flex align-items-center">
@@ -79,52 +49,17 @@
           <!-- image path -->
           {{ $imagePath:= "" }}
           {{ with .Params.images }}
-            {{ $imagePath = index . 0 }}
+          {{ $imagePath = index . 0 }}
           {{ end }}
           {{ if $imagePath }}
-          <!-- image CDN -->
-          {{ if hasPrefix $imagePath "http" }}
-          <img loading="lazy" decoding="async" src="{{ $imagePath | safeURL }}" alt="{{ .Title }}"
-            class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="80" height="80">
-          {{ else }}
-          <!-- /image cdn -->
-
-          <!-- image processing for single device -->
-          {{ if hasPrefix $imagePath "/" }}
-            {{ $image := .Resources.GetMatch (path.Split $imagePath).File }}
-            {{ if $image }}
-              {{ $imageFallback:= $image.Fill "80x80" }}
-              {{ $imageWebp:= $image.Fill "80x80 webp" }}
-              <img loading="lazy" decoding="async" src="{{$imageWebp.RelPermalink}}" alt="{{ .Title }}"
-                class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{$imageFallback.Width}}" height="{{$imageFallback.Height}}"
-                onerror="this.onerror='null';this.src='{{$imageFallback.RelPermalink}}'">
-            {{ else }}
-              {{ if fileExists (add `assets/` $imagePath) }}
-                {{ $image:= resources.Get $imagePath }}
-                {{ $imageFallback:= $image.Fill "80x80" }}
-                {{ $imageWebp:= $image.Fill "80x80 webp" }}
-                <img loading="lazy" decoding="async" src="{{$imageWebp.RelPermalink}}" alt="{{ .Title }}"
-                  class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{$imageFallback.Width}}" height="{{$imageFallback.Height}}"
-                  onerror="this.onerror='null';this.src='{{$imageFallback.RelPermalink}}'">
-              {{ end }}
-            {{ end }}
-          {{ else }}
-            {{ if fileExists (add `assets/` $imagePath) }}
-              {{ $image:= resources.Get $imagePath }}
-              {{ $imageFallback:= $image.Fill "80x80" }}
-              {{ $imageWebp:= $image.Fill "80x80 webp" }}
-              <img loading="lazy" decoding="async" src="{{$imageWebp.RelPermalink}}" alt="{{ .Title }}"
-                class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{$imageFallback.Width}}" height="{{$imageFallback.Height}}"
-                onerror="this.onerror='null';this.src='{{$imageFallback.RelPermalink}}'">
-            {{ end }}
-          {{ end }}
-
-          <!-- /image processing for single device -->
-          {{ end }}
+          {{ $image := (partial "functions/get-image.html" (dict "Page" . "Destination" $imagePath)) }}
+          {{ $imageFallback:= $image.Fill "80x80" }}
+          {{ $imageWebp:= $image.Fill "80x80 webp" }}
+          <img loading="lazy" decoding="async" src="{{ $imageWebp.RelPermalink }}" alt="{{ .Title }}" class="img-fluid rounded-circle mb-3 mb-sm-0 featured-widget-img" width="{{ $imageFallback.Width }}" height="{{ $imageFallback.Height }}" onerror="this.onerror='null';this.src='{{ $imageFallback.RelPermalink }}'" />
           {{ end }}
           <div class="card-body ps-sm-3">
             <h4 class="h6">
-              <a class="title-linked" href="{{.RelPermalink}}">{{.Title | markdownify}}</a>
+              <a class="title-linked" href="{{ .RelPermalink }}">{{ .Title | markdownify }}</a>
             </h4>
             <ul class="list-inline card-meta d-flex align-items-center mb-3">
               <li class="list-inline-item d-flex align-items-center">
