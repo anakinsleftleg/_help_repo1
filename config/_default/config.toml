@@ -28,7 +28,7 @@ min = "0.87.0"
 
 ############################# Outputs ##############################
 [outputs]
-home = ["HTML", "RSS", "JSON", "WebAppManifest"]
+home = ["HTML", "RSS", "WebAppManifest"]
 
 ############################# Imaging ##############################
 [imaging]
